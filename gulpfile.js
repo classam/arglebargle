@@ -11,13 +11,42 @@ var plumber = require('gulp-plumber')
 var jsonEditor = require('gulp-json-editor')
 var jsonCombine = require('gulp-jsoncombine')
 
+var cleanUpInput = jsonEditor(function(json){
+    // Tidy up content_type and alt_text
+    if(typeof json['content_type'] !== 'undefined'){
+        json['content-type'] = json['content_type']
+        delete json['content_type']
+    }
+    if(typeof json['alt_text'] !== 'undefined'){
+        json['alt-text'] = json['alt_text']
+        delete json['alt_text']
+    }
+    json['html'] = ""
+    return json;
+});
+
+var validateInput = jsonEditor(function(json){
+    if(typeof json['content-type'] === 'undefined'){
+        throw "YAML elements must contain a content-type directive"
+    }
+    return json;
+});
+
+var hideHiddenPosts = jsonEditor(function(json){
+    if( typeof json['visible'] !== 'undefined' &&
+        json['visible'] == false){
+        throw "Hiding this blog post." 
+    }
+    return json;
+});
+
 var renderYoutube = jsonEditor(function(json){
     var content_type = json['content-type'];
     var width = 560;
     var height = 315;
     if(content_type === 'youtube'){
         var youtubekey = json['youtube'];
-        json['html'] = "<iframe width=\""+width+"\" height=\""+height+"\" src=\"//www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
+        json['html'] += "\n<iframe width=\""+width+"\" height=\""+height+"\" src=\"//www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
     }
     return json;
 });
@@ -33,25 +62,9 @@ gulp.task('default', function(){
         .pipe(stripBom())
         .pipe(plumber())
         .pipe(yml())
-        .pipe(jsonEditor(function(json){
-            // Tidy up content_type and alt_text
-            if(typeof json['content_type'] !== 'undefined'){
-                json['content-type'] = json['content_type']
-                delete json['content_type']
-            }
-            if(typeof json['alt_text'] !== 'undefined'){
-                json['alt-text'] = json['alt_text']
-                delete json['alt_text']
-            }
-            if(typeof json['content-type'] === 'undefined'){
-                throw "YAML elements must contain a content-type directive"
-            }
-            if( typeof json['visible'] !== 'undefined' &&
-                json['visible'] == false){
-                throw "Hiding this blog post." 
-            }
-            return json;
-        }))
+        .pipe(cleanUpInput())
+        .pipe(validateInput())
+        .pipe(hideHiddenPosts())
         .pipe(renderYoutube)
         .pipe(gulp.dest('./_json'));
 });
