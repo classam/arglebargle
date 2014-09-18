@@ -11,6 +11,7 @@ var plumber = require('gulp-plumber');
 var jsonEditor = require('gulp-json-editor');
 var jsonCombine = require('gulp-jsoncombine');
 var safe = require('escape-html');
+var marked = require('marked');
 
 var cleanUpInput = jsonEditor(function(json){
     // Tidy up content_type and alt_text
@@ -73,6 +74,46 @@ var renderImage = jsonEditor(function(json){
     return json;
 });
 
+var renderHtml = jsonEditor(function(json){
+    var content_type = json['content-type'];
+    if(content_type === 'html'){
+        var content = "";
+        if(typeof json['content'] !== 'undefined'){
+            content = json['content'];
+        }
+        if(typeof content !== 'undefined'){
+            json['html'] = content;
+        }
+    }
+    return json;
+});
+
+var renderMarkdown = jsonEditor(function(json){
+    var content_type = json['content-type'];
+    if(content_type === 'markdown'){
+        var content = "";
+        if(typeof json['markdown'] !== 'undefined'){
+            content = json['markdown'];
+        }
+        if(typeof json['content'] !== 'undefined'){
+            content = json['content'];
+        }
+        if(typeof content === 'undefined'){
+            throw "Articles with content-type '"+content_type+"' must have a '"+content_type+"' element";
+        }
+        json['html'] = marked(content);
+    }
+    return json;
+});
+
+var catchUnrendered = jsonEditor(function(json){
+    var content_type = json['content-type'];
+    if(typeof json['html'] === 'undefined'){
+        throw "I couldn't find a renderer for " + content_type
+    }
+    return json;
+});
+
 gulp.task('default', function(){
     return gulp.src('../Blog/*.yaml')
         .pipe(print())
@@ -83,8 +124,11 @@ gulp.task('default', function(){
         .pipe(cleanUpInput)
         .pipe(validateInput)
         .pipe(hideHiddenPosts)
+        .pipe(renderHtml)
         .pipe(renderYoutube)
         .pipe(renderImage)
+        .pipe(renderMarkdown)
+        .pipe(catchUnrendered)
         .pipe(gulp.dest('./_json'));
 });
 
