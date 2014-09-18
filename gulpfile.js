@@ -1,5 +1,6 @@
 
 var gulp = require('gulp');
+var _ = require('lodash');
 var size = require('gulp-size');
 var yaml = require('gulp-yaml');
 var yml = require('gulp-yml');
@@ -106,6 +107,35 @@ var renderMarkdown = jsonEditor(function(json){
     return json;
 });
 
+var renderIrc = jsonEditor(function(json){
+    var content_type = json['content-type'];
+    if(content_type === 'irc'){
+        var content = "";
+        if(typeof json['irc'] !== 'undefined'){
+            content = json['irc'];
+        }
+        if(typeof json['content'] !== 'undefined'){
+            content = json['content'];
+        }
+        if(typeof content === 'undefined'){
+            throw "Articles with content-type '"+content_type+"' must have a '"+content_type+"' element";
+        }
+        json['html'] = "";
+        // For each line in content, split into <name> content
+        // then display like <li><strong class='name'>name</strong> content</li>
+        var lines = content.split("\n");
+        _(lines).forEach(function(line){
+            if(/<\w+>.*/.test(line)){
+                var matches = line.match(/<(\w+)>(.*)/);
+                var name = safe(matches[1]);
+                var message = safe(matches[2]);
+                json['html'] += "<li><strong class='name'>"+name+"</strong> "+message+"</li>\n";
+            }
+        });
+    }
+    return json;
+});
+
 var catchUnrendered = jsonEditor(function(json){
     var content_type = json['content-type'];
     if(typeof json['html'] === 'undefined'){
@@ -127,6 +157,7 @@ gulp.task('default', function(){
         .pipe(renderHtml)
         .pipe(renderYoutube)
         .pipe(renderImage)
+        .pipe(renderIrc)
         .pipe(renderMarkdown)
         .pipe(catchUnrendered)
         .pipe(gulp.dest('./_json'));
