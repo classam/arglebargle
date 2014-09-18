@@ -7,9 +7,10 @@ var print = require('gulp-print');
 var indent = require('gulp-indent');
 var stripBom = require('gulp-stripbom');
 var removeEmptyLines = require('gulp-remove-empty-lines');
-var plumber = require('gulp-plumber')
-var jsonEditor = require('gulp-json-editor')
-var jsonCombine = require('gulp-jsoncombine')
+var plumber = require('gulp-plumber');
+var jsonEditor = require('gulp-json-editor');
+var jsonCombine = require('gulp-jsoncombine');
+var safe = require('escape-html');
 
 var cleanUpInput = jsonEditor(function(json){
     // Tidy up content_type and alt_text
@@ -21,7 +22,6 @@ var cleanUpInput = jsonEditor(function(json){
         json['alt-text'] = json['alt_text']
         delete json['alt_text']
     }
-    json['html'] = ""
     return json;
 });
 
@@ -46,13 +46,31 @@ var renderYoutube = jsonEditor(function(json){
     var height = 315;
     if(content_type === 'youtube'){
         var youtubekey = json['youtube'];
-        json['html'] += "\n<iframe width=\""+width+"\" height=\""+height+"\" src=\"//www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
+        json['html'] = "\n<iframe width=\""+width+"\" height=\""+height+"\" src=\"//www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
     }
     return json;
 });
 
-var renderComic = jsonEditor(function(json){
-
+var renderImage = jsonEditor(function(json){
+    var content_type = json['content-type'];
+    if(content_type === 'comic' || content_type === 'image'){
+        var url;
+        var alt_text = "";
+        if(typeof json['comic'] !== 'undefined'){
+            url = json['comic'];
+        }
+        if(typeof json['image'] !== 'undefined'){
+            url = json['image'];
+        }
+        if(typeof url === 'undefined'){
+            throw "Articles with content-type '"+content_type+"' must have a '"+content_type+"' element";
+        }
+        if(typeof json['alt-text'] !== 'undefined'){
+            alt_text = json['alt-text']
+        }
+        json['html'] = "\n<img src=\""+url+"\" alt-text=\""+safe(alt_text)+"\">"
+    }
+    return json;
 });
 
 gulp.task('default', function(){
@@ -62,10 +80,11 @@ gulp.task('default', function(){
         .pipe(stripBom())
         .pipe(plumber())
         .pipe(yml())
-        .pipe(cleanUpInput())
-        .pipe(validateInput())
-        .pipe(hideHiddenPosts())
+        .pipe(cleanUpInput)
+        .pipe(validateInput)
+        .pipe(hideHiddenPosts)
         .pipe(renderYoutube)
+        .pipe(renderImage)
         .pipe(gulp.dest('./_json'));
 });
 
