@@ -13,6 +13,7 @@ var jsonEditor = require('gulp-json-editor');
 var jsonCombine = require('gulp-jsoncombine');
 var safe = require('escape-html');
 var marked = require('marked');
+var moment = require('moment');
 
 var cleanUpInput = jsonEditor(function(json){
     // Tidy up content_type and alt_text
@@ -144,7 +145,11 @@ var catchUnrendered = jsonEditor(function(json){
     return json;
 });
 
-gulp.task('default', function(){
+var addId = jsonEditor(function(json){
+    return json;
+});
+
+gulp.task('jsonify', function(){
     return gulp.src('../Blog/*.yaml')
         .pipe(print())
         .pipe(removeEmptyLines())
@@ -160,19 +165,53 @@ gulp.task('default', function(){
         .pipe(renderIrc)
         .pipe(renderMarkdown)
         .pipe(catchUnrendered)
-        .pipe(gulp.dest('./_json'));
+        .pipe(addId)
+        .pipe(gulp.dest('./_json/posts'));
 });
 
-gulp.task('index', function(){
-    return gulp.src('./_json/*.json')
+gulp.task('config', function(){
+    return gulp.src('./config.yaml')
+        .pipe(yml())
+        .pipe(gulp.dest('./_json/'));
+});
+
+gulp.task('index', ['jsonify'], function(){
+    return gulp.src('./_json/posts/*.json')
         .pipe(jsonEditor(function(json){
             delete json['content-type'];
             delete json['content'];
+            delete json['html'];
             delete json['visible'];
+            return json;
         }))
         .pipe(jsonCombine("index.json",function(data){
-            //console.log(data) 
             return new Buffer(JSON.stringify(data));   
         }))
+        .pipe(jsonEditor(function(json){
+            var newjson = {'index':[]}
+            _.forEach(_.keys(json), function(key){
+                // Add to index
+                var obj = json[key];
+                obj['id'] = key;
+                newjson.index.push(obj);
+
+                // Create categories
+                _.forEach(obj.categories, function(category){
+                    if(typeof newjson[category] === 'undefined'){
+                        newjson[category] = [];
+                    }
+                    newjson[category].push(obj);
+                });
+            });
+            _.forEach(_.keys(newjson), function(key){
+                newjson[key].sort(function(a, b){
+                    return moment(a.created) - moment(b.created);
+                });
+            });
+            return newjson;
+        }))
         .pipe(gulp.dest('./_json'));
+});
+
+gulp.task('default', ['index', 'config'], function(){
 });
