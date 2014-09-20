@@ -12,11 +12,6 @@ var jsonCombine = require('gulp-jsoncombine');
 var moment = require('moment');
 var argyle = require('./argyle');
 
-var addId = jsonEditor(function(json){
-    // TODO: this
-    return json;
-});
-
 gulp.task('jsonify', function(){
     return gulp.src('./source/posts/*.yaml')
         .pipe(print())
@@ -25,6 +20,7 @@ gulp.task('jsonify', function(){
         .pipe(plumber())
         .pipe(yml())
         .pipe(argyle.cleanUpInput())
+        .pipe(argyle.appendFileinfo())
         .pipe(argyle.validateInput())
         .pipe(argyle.hideHiddenPosts())
         .pipe(argyle.renderHtml())
@@ -33,7 +29,6 @@ gulp.task('jsonify', function(){
         .pipe(argyle.renderIrc())
         .pipe(argyle.renderMarkdown())
         .pipe(argyle.catchUnrendered())
-        .pipe(addId)
         .pipe(gulp.dest('./target/json/posts'));
 });
 
@@ -45,13 +40,7 @@ gulp.task('config', function(){
 
 gulp.task('index', ['jsonify'], function(){
     return gulp.src('./target/json/posts/*.json')
-        .pipe(jsonEditor(function(json){
-            newjson = {};
-            newjson['created'] = json['created'];
-            newjson['categories'] = json['categories'];
-            newjson['title'] = json['title'];
-            return newjson;
-        }))
+        .pipe(argyle.stripNonIndexProperties())
         .pipe(jsonCombine("index.json",function(data){
             return new Buffer(JSON.stringify(data));   
         }))

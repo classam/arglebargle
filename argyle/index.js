@@ -1,7 +1,10 @@
 var _ = require('lodash');
+var jsbeautify = require('js-beautify').js_beautify;
 var jsonEditor = require('gulp-json-editor');
 var safe = require('escape-html');
 var marked = require('marked');
+var through = require('through2');
+var PluginError = require('gulp-util').PluginError;
 
 module.exports = {
     cleanUpInput:function(){
@@ -17,6 +20,32 @@ module.exports = {
         }
         return json;
         })
+    },
+    appendFileinfo:function(){
+        return through.obj(function(file, encoding, callback){
+            if(file.isNull()){
+                this.push(file);
+                return callback();
+            }
+            if(file.isStream()){
+                this.emit('error', new PluginError('argyle', 'Streaming is not supported'));
+                return callback();
+            }
+            try {
+                var utf8 = file.contents.toString('utf8');
+                var json = JSON.parse(utf8);
+                json['path'] = file.path;
+                json['base'] = file.base;
+                json['filename'] = file.path.replace(/^.*[\\\/]/, '');
+                json['id'] = json['filename'].slice(0, -5);
+                file.contents = new Buffer(JSON.stringify(json));
+            }
+            catch (err) {
+                this.emit('error', new PluginError('argyle', err));
+            }
+            this.push(file);
+            callback();
+        });
     },
     validateInput:function(){
         return jsonEditor(function(json){
@@ -142,5 +171,15 @@ module.exports = {
             }
             return json;
         });
+    },
+    stripNonIndexProperties: function(){
+        return jsonEditor(function(json){
+            newjson = {};
+            newjson['created'] = json['created'];
+            newjson['categories'] = json['categories'];
+            newjson['title'] = json['title'];
+            return newjson;
+        })
     }
+
 };
