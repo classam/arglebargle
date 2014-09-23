@@ -47,7 +47,7 @@ function renderYoutube(json){
     var height = 315;
     if(content_type === 'youtube'){
         var youtubekey = json['youtube'];
-        json['html'] = "\n<iframe class='youtube' width=\""+width+"\" height=\""+height+"\" src=\"//www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
+        json['html'] = "\n<iframe class='youtube' width=\""+width+"\" height=\""+height+"\" src=\"http://www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
     }
     return json;
 }
@@ -196,7 +196,7 @@ function buildIndex(json){
     });
     newjson.sort(sortPost);
     return newjson;
-};
+};https://pbs.twimg.com/media/ByPSzOzIgAAY55x.jpg
 
 function buildCategories(json){
     // Take a json containing an concatenated JSON object 
@@ -237,25 +237,42 @@ function addMetadataToPost(post, master, index){
     }
 
     // Category First, Last, Previous, Next
+    post.category_items = []
+    _.forEach(post.categories, function(category){
+        var category_list = master.categories[category]
+        var category_descriptor = { 'name':category };
+        category_descriptor['first'] = category_list[0]
+        category_descriptor['last'] = category_list[category_list.length-1]
+        var index_in_category = _.findIndex(category_list, function(p){
+            return p.id === post.id;
+        })
+        if( index_in_category > 0 ){
+            category_descriptor['previous'] = category_list[index_in_category-1];
+        }
+        if( index_in_category < category_list.length-1 ){
+            category_descriptor['next'] = category_list[index_in_category+1];
+        }
+        post.category_items.push(category_descriptor);
+    });
 
     // Date
     var date = moment(post['created']);
     post['pubdate'] = date.format("ddd, DD MMM YYYY HH:mm:ss Z");
 
     var datetime_format = "LLLL";
-    if(typeof master.config.datetime_format === 'undefined'){
+    if(typeof master.config.datetime_format !== 'undefined'){
         datetime_format = master.config.datetime_format;    
     }
     post['human_datetime'] = date.format(datetime_format);
-    
+
     var date_format = "LL";
-    if(typeof master.config.date_format === 'undefined'){
+    if(typeof master.config.date_format !== 'undefined'){
         date_format = master.config.date_format;    
     }
     post['human_date'] = date.format(date_format);
     
     var time_format = "LT";
-    if(typeof master.config.time_format === 'undefined'){
+    if(typeof master.config.time_format !== 'undefined'){
         time_format = master.config.time_format;    
     }
     post['human_time'] = date.format(time_format);

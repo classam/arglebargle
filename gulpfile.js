@@ -14,6 +14,8 @@ var rename = require('gulp-rename');
 var ignore = require('gulp-ignore');
 var handlebars = require('gulp-compile-handlebars');
 var handlebarsHelpers = require('diy-handlebars-helpers');
+var sass = require('gulp-sass');
+var concat = require('gulp-concat');
 
 gulp.task('clean', function(){
     del('target'); 
@@ -49,21 +51,21 @@ gulp.task('compile_config', function(){
 });
 
 gulp.task('compile_index', ['concatenate_posts'], function(){
-    return gulp.src('target/json/posts.json')
+    return gulp.src('./target/json/posts.json')
         .pipe(argyle.buildIndex())
         .pipe(rename("index.json"))
-        .pipe(gulp.dest('target/json/'));
+        .pipe(gulp.dest('./target/json/'));
 });
 
 gulp.task('compile_categories', ['concatenate_posts'], function(){
-    return gulp.src('target/json/posts.json')
+    return gulp.src('./target/json/posts.json')
         .pipe(argyle.buildCategories())
         .pipe(rename("categories.json"))
         .pipe(gulp.dest('target/json/'));
 });
 
 gulp.task('concatenate_master', ['compile_config', 'compile_index', 'compile_categories'], function(){
-    return gulp.src('target/json/*.json') 
+    return gulp.src('./target/json/*.json') 
         .pipe(ignore.include(function(file){
             return (file.path.indexOf("config.json") > -1 ||
                     file.path.indexOf("index.json") > -1 ||
@@ -76,13 +78,24 @@ gulp.task('concatenate_master', ['compile_config', 'compile_index', 'compile_cat
         .pipe(gulp.dest('./target/json/'));
 });
 
-gulp.task('partials', ['concatenate_master'], function(cb){
-    return gulp.src('target/json/master.json')
+gulp.task('sass', function(){
+    gulp.src('./source/theme/scss/*.scss')
+        .pipe(sass())
+        .pipe(concat('bundle.css'))
+        .pipe(gulp.dest('./target/css/'))
+});
+
+gulp.task('partials', ['concatenate_master', 'sass'], function(cb){
+    return gulp.src('./target/json/master.json')
         .pipe(jsonEditor(function(json){
             gulp.src('./source/theme/partials/*.handlebars')
             .pipe(print())
             .pipe(handlebars(json, {
-                'helpers': handlebarsHelpers, 
+                'helpers': handlebarsHelpers,
+                'partials': {
+                    'css': "<link rel='stylesheet' href='css/bundle.css'>",
+                    'js': "<script src='js/bundle.js'>"
+                }
             }))
             .pipe(gulp.dest('./target/partials/'))
             return json;
@@ -140,5 +153,4 @@ gulp.task('index_html', ['partials'], function(){
 });
 
 gulp.task('default', ['index_html', 'pages_html', 'rss'], function(){
-    // TODO
 });

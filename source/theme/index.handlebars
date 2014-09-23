@@ -1,14 +1,15 @@
 {{> partials/header }}
 
 <ul>
-{{#each-limit index 5}}
-<li class='special post'><a href="{{this.id}}.html">{{this.title}}</a> - {{this.created}} - {{{this.html}}}</li>
+{{#each-limit index 1}}
+<li class='special post'><a href="{{this.id}}.html">{{this.title}}</a> - {{this.human_date}} - {{{this.html}}}</li>
 {{/each-limit}}
 </ul>
 
+
 <ul>
 {{#each index}}
-<li class='post'><a href="{{this.id}}.html">{{this.title}}</a> - {{this.created}}</li>
+<li class='post'><a href="{{this.id}}.html">{{this.title}}</a> - {{this.human_date}}</li>
 {{/each}}
 </ul>
 
