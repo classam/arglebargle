@@ -81,11 +81,22 @@ gulp.task('concatenate_master', ['compile_config', 'compile_index', 'compile_cat
 gulp.task('sass', function(){
     gulp.src('./source/theme/scss/*.scss')
         .pipe(sass())
-        .pipe(concat('bundle.css'))
+        .pipe(concat('sass_bundle.css'))
         .pipe(gulp.dest('./target/css/'))
 });
 
-gulp.task('partials', ['concatenate_master', 'sass'], function(cb){
+gulp.task('css', function(){
+    gulp.src('./source/theme/css/*.css')
+        .pipe(concat('css_bundle.css'))
+        .pipe(gulp.dest('./target/css/'))
+});
+
+gulp.task('images', function(){
+    gulp.src('./source/theme/images/*')
+        .pipe(gulp.dest('./target/images/'))
+});
+
+gulp.task('partials', ['concatenate_master', 'sass', 'css', 'images'], function(cb){
     return gulp.src('./target/json/master.json')
         .pipe(jsonEditor(function(json){
             gulp.src('./source/theme/partials/*.handlebars')
@@ -93,8 +104,9 @@ gulp.task('partials', ['concatenate_master', 'sass'], function(cb){
             .pipe(handlebars(json, {
                 'helpers': handlebarsHelpers,
                 'partials': {
-                    'css': "<link rel='stylesheet' href='css/bundle.css'>",
-                    'js': "<script src='js/bundle.js'>"
+                    'css': "<link rel='stylesheet' href='css/sass_bundle.css'>\n"+
+                           "<link rel='stylesheet' href='css/css_bundle.css'>",
+                    'js': "<script src='js/bundle.js'></script>"
                 }
             }))
             .pipe(gulp.dest('./target/partials/'))
