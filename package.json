@@ -22,7 +22,8 @@
     "gulp-stripbom": "^0.1.3",
     "gulp-yml": "^0.1.1",
     "lodash": "^2.4.1",
-    "marked": "^0.3.2"
+    "marked": "^0.3.2",
+    "gulp-markdown": "~1.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

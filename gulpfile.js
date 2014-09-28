@@ -16,6 +16,7 @@ var handlebars = require('gulp-compile-handlebars');
 var handlebarsHelpers = require('diy-handlebars-helpers');
 var sass = require('gulp-sass');
 var concat = require('gulp-concat');
+var markdown = require('gulp-markdown');
 
 gulp.task('clean', function(){
     del('target'); 
@@ -170,5 +171,25 @@ gulp.task('index_html', ['partials'], function(){
         }));
 });
 
-gulp.task('default', ['index_html', 'pages_html', 'rss'], function(){
+gulp.task('other_pages', ['partials'], function(){
+    return gulp.src('target/json/master.json')
+        .pipe(jsonEditor(function(master){
+            gulp.src('source/theme/*.handlebars')
+                .pipe(ignore.exclude(function(file){
+                    return (file.path.indexOf("index.handlebars") > -1 ||
+                            file.path.indexOf("single.handlebars") > -1 ||
+                            file.path.indexOf("rss.handlebars") > -1);
+                }))
+                .pipe(handlebars(argyle.addMetadataToMaster(master), {
+                    'batch':['./target/partials'],
+                    'helpers': handlebarsHelpers, 
+                }))
+                .pipe(rename({'extname':'.html'}))
+                .pipe(gulp.dest('./target'))
+                .pipe(print())
+            return {};
+        }));
+});
+
+gulp.task('default', ['index_html', 'pages_html', 'other_pages', 'rss'], function(){
 });
