@@ -85,7 +85,13 @@ gulp.task('sass', function(){
         .pipe(gulp.dest('./target/css/'))
 });
 
-gulp.task('partials', ['concatenate_master', 'sass'], function(cb){
+gulp.task('pages', function(){
+    return gulp.src('./source/pages/*.md')
+        .pipe(markdown())
+        .pipe(gulp.dest('./target/partials/')
+});
+
+gulp.task('partials', ['concatenate_master', 'sass'], function(){
     return gulp.src('./target/json/master.json')
         .pipe(jsonEditor(function(json){
             gulp.src('./source/theme/partials/*.handlebars')
@@ -99,7 +105,6 @@ gulp.task('partials', ['concatenate_master', 'sass'], function(cb){
             }))
             .pipe(gulp.dest('./target/partials/'))
             return json;
-            cb();
         }))
 });
 
