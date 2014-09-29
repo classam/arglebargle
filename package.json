@@ -1,7 +1,7 @@
 {
-  "name": "argyle",
+  "name": "arglebargle",
   "version": "1.0.0",
-  "description": "Build your blog with gulp and argyle.",
+  "description": "Build your blog with gulp and arglebargle.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
