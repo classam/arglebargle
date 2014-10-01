@@ -92,6 +92,9 @@ function renderHtml(json){
         if(typeof json['content'] !== 'undefined'){
             content = json['content'];
         }
+        if(typeof json['html'] !== 'undefined'){
+            content = json['html'];
+        }
         if(typeof content !== 'undefined'){
             json['html'] = content;
         }
@@ -143,8 +146,8 @@ function renderIrc(json){
         // then display like <li><strong class='name'>name</strong> content</li>
         var lines = content.split("\n");
         _(lines).forEach(function(line){
-            if(/<\w+>.*/.test(line)){
-                var matches = line.match(/<(\w+)>(.*)/);
+            if(/<[>^]+>.*/.test(line)){
+                var matches = line.match(/<([>^]+)>(.*)/);
                 var name = safe(matches[1]);
                 var message = safe(matches[2]);
                 json['html'] += "<li><strong class='name'>"+name+"</strong> "+message+"</li>\n";
@@ -196,7 +199,7 @@ function buildIndex(json){
     });
     newjson.sort(sortPost);
     return newjson;
-};https://pbs.twimg.com/media/ByPSzOzIgAAY55x.jpg
+}
 
 function buildCategories(json){
     // Take a json containing an concatenated JSON object 
