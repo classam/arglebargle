@@ -146,8 +146,8 @@ function renderIrc(json){
         // then display like <li><strong class='name'>name</strong> content</li>
         var lines = content.split("\n");
         _(lines).forEach(function(line){
-            if(/<[>^]+>.*/.test(line)){
-                var matches = line.match(/<([>^]+)>(.*)/);
+            if(/<\S+>.*/.test(line)){
+                var matches = line.match(/<(\S+)>(.*)/);
                 var name = safe(matches[1]);
                 var message = safe(matches[2]);
                 json['html'] += "<li><strong class='name'>"+name+"</strong> "+message+"</li>\n";
