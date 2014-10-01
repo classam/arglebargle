@@ -141,7 +141,7 @@ function renderIrc(json){
         if(typeof content === 'undefined'){
             throw "Articles with content-type '"+content_type+"' must have a '"+content_type+"' element";
         }
-        json['html'] = "";
+        json['html'] = "<ul class='irc'>";
         // For each line in content, split into <name> content
         // then display like <li><strong class='name'>name</strong> content</li>
         var lines = content.split("\n");
@@ -153,6 +153,7 @@ function renderIrc(json){
                 json['html'] += "<li><strong class='name'>"+name+"</strong> "+message+"</li>\n";
             }
         });
+        json['html'] += "</ul>";
     }
     return json;
 }
