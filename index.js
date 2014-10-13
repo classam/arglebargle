@@ -28,12 +28,6 @@ function validateInput(json){
 }
 
 function hideHiddenPosts(json){
-    // If posts have 'hidden:true', they shouldn't go through the pipeline
-    if(typeof json['visible'] !== 'undefined' &&
-        json['visible'] == false){
-        throw "This post is hidden, and won't be rendered." 
-    }
-    return json;
 }
 
 function tidyInput(json){
@@ -196,7 +190,9 @@ function buildIndex(json){
     //   [ {~postdata~}, {~postdata~} ]
     var newjson = []
     _.forEach(_.keys(json), function(key){ 
-        newjson.push(json[key]); 
+        if( typeof json[key]['title'] !== 'undefined' ){
+            newjson.push(json[key]); 
+        }
     });
     newjson.sort(sortPost);
     return newjson;
