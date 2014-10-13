@@ -28,6 +28,12 @@ function validateInput(json){
 }
 
 function hideHiddenPosts(json){
+    // If posts have 'hidden:true', they shouldn't go through the pipeline
+    if(typeof json['visible'] !== 'undefined' &&
+        json['visible'] == false){
+        return {};
+    }
+    return json;
 }
 
 function tidyInput(json){
