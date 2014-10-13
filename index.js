@@ -378,6 +378,7 @@ module.exports = {
     stripNonIndexProperties: function(){return jsonEditor(stripNonIndexProperties);},
     buildIndex: function(){return jsonEditor(buildIndex)},
     buildCategories: function(){return jsonEditor(buildCategories)},
+    buildReverseCategories: function(){return jsonEditor(buildReverseCategories)},
     addMetadataToPost: addMetadataToPost,
     addMetadataToMaster: addMetadataToMaster,
 };
