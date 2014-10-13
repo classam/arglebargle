@@ -43,8 +43,8 @@ function tidyInput(json){
 function renderYoutube(json){
     // Convert "youtube:pQ6RTUcNqNk" into a youtube embed link. 
     var content_type = json['content-type'];
-    var width = 560;
-    var height = 315;
+    var width = 854;
+    var height = 480;
     if(content_type === 'youtube'){
         var youtubekey = json['youtube'];
         json['html'] = "\n<iframe class='youtube' width=\""+width+"\" height=\""+height+"\" src=\"http://www.youtube.com/embed/"+youtubekey+"\" frameborder=\"0\" allowfullscreen></iframe>"
