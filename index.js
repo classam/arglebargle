@@ -226,6 +226,29 @@ function buildCategories(json){
     return newjson;
 };
 
+function buildReverseCategories(json){
+    // Take a json containing an concatenated JSON object 
+    //  made of posts - 
+    //   { 'filename': {~postdata~}, 'filename2': {~postdata~} }
+    // and replace it with an object containing lists of posts by category in reverse
+    //   {'category1': [{~postdata~}, {~postdata~}], 'category2':[...] }
+    var newjson = {}
+    _.forEach(_.keys(json), function(key){ 
+        var obj = json[key];
+        _.forEach(obj.categories, function(category){
+            if(typeof newjson[category] === 'undefined'){
+                newjson[category] = [];
+            }
+            newjson[category].push(obj);
+        });
+    });
+    _.forEach(_.keys(newjson), function(key){
+        newjson[key].sort(sortPost);
+        newjson[key].reverse();
+    });
+    return newjson;
+};
+
 function addMetadataToPost(post, master, index){
     // First, Last, Previous, Next
     post['first'] = master.index[0];
