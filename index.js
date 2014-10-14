@@ -73,7 +73,7 @@ function renderImage(json){
         }
         json['html'] = ""
         if(typeof url === "string"){
-            json['html'] = "\n<img src=\""+url+"\" alt-text=\""+safe(alt_text)+"\">"
+            json['html'] = "\n<img src=\""+url+"\" title=\""+safe(alt_text)+"\">"
         }
         else{
             _.forEach(url, function(image){
