@@ -28,10 +28,16 @@ function validateInput(json){
 }
 
 function hideHiddenPosts(json){
+    // If posts have a date in the future, they shouldn't go through the pipeline
+    var date = moment(json.created);
+    var today = moment();
+    if( date.isAfter(today) ){
+        throw "This article is in the future."
+    }
     // If posts have 'hidden:true', they shouldn't go through the pipeline
     if(typeof json.visible !== 'undefined' &&
         json.visible === false){
-        return {};
+        throw "This article is hidden."
     }
     return json;
 }
