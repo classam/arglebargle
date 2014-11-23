@@ -32,12 +32,14 @@ function hideHiddenPosts(json){
     var date = moment(json.created);
     var today = moment();
     if( date.isAfter(today) ){
-        throw "This article is in the future."
+        console.log(json.title, "is in the future");
+        return {}
     }
     // If posts have 'hidden:true', they shouldn't go through the pipeline
     if(typeof json.visible !== 'undefined' &&
         json.visible === false){
-        throw "This article is hidden."
+        console.log(json.title, "is hidden");
+        return {}
     }
     return json;
 }
@@ -181,7 +183,7 @@ function catchUnrendered(json){
     // Throw an error if nothing has rendered this json yet. 
     var content_type = json['content-type'];
     if(typeof json.html === 'undefined'){
-        throw "I couldn't find a renderer for " + content_type;
+        throw json.title + ": I couldn't find a renderer for " + content_type;
     }
     return json;
 }
