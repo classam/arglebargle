@@ -81,6 +81,9 @@ function renderImage(json){
             alt_text = json['alt-text'];
             secret_text = json['alt-text'];
         }
+        if(typeof json['secret-text'] !== 'undefined'){
+            secret_text = json['secret-text'];
+        }
         if(typeof json.secret_text !== 'undefined'){
             secret_text = json.secret_text;
         }
@@ -262,6 +265,32 @@ function buildReverseCategories(json){
     return newjson;
 }
 
+function addDatetimeToPost(post, config){
+    // Date
+    var date = moment(post.created);
+    post.pubdate = date.format("ddd, DD MMM YYYY HH:mm:ss Z");
+
+    var datetime_format = "LLLL";
+    if(typeof config.datetime_format !== 'undefined'){
+        datetime_format = master.config.datetime_format;    
+    }
+    post.human_datetime = date.format(datetime_format);
+
+    var date_format = "LL";
+    if(typeof config.date_format !== 'undefined'){
+        date_format = master.config.date_format;    
+    }
+    post.human_date = date.format(date_format);
+    
+    var time_format = "LT";
+    if(typeof config.time_format !== 'undefined'){
+        time_format = master.config.time_format;    
+    }
+    post.human_time = date.format(time_format);
+    
+    return post;
+}
+
 function addMetadataToPost(post, master, index){
     // First, Last, Previous, Next
     post.first = master.index[0];
@@ -297,27 +326,7 @@ function addMetadataToPost(post, master, index){
         post.category_items.push(category_descriptor);
     });
 
-    // Date
-    var date = moment(post.created);
-    post.pubdate = date.format("ddd, DD MMM YYYY HH:mm:ss Z");
-
-    var datetime_format = "LLLL";
-    if(typeof master.config.datetime_format !== 'undefined'){
-        datetime_format = master.config.datetime_format;    
-    }
-    post.human_datetime = date.format(datetime_format);
-
-    var date_format = "LL";
-    if(typeof master.config.date_format !== 'undefined'){
-        date_format = master.config.date_format;    
-    }
-    post.human_date = date.format(date_format);
-    
-    var time_format = "LT";
-    if(typeof master.config.time_format !== 'undefined'){
-        time_format = master.config.time_format;    
-    }
-    post.human_time = date.format(time_format);
+    post = addDatetimeToPost(post, master.config);
 
     return post;
 }
@@ -327,6 +336,11 @@ function addMetadataToMaster(master){
     master.last = master.index[master.index.length-1];
     _.forEach(master.index, function(post, index){
         post = addMetadataToPost(post, master, index);
+    });
+    _.forEach(master.categories, function(value, key){
+        _.forEach(value, function(post, index){
+            master.categories[key][index] = addDatetimeToPost(post, master.config);
+        });
     });
     master.index.reverse();
     return master;
