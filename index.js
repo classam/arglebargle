@@ -89,13 +89,14 @@ function renderImage(json){
         }
         json.html = "";
         if(typeof url === "string"){
-            json.html = "\n<img src=\""+url+"\" title=\""+safe(secret_text)+"\" alt=\""+safe(alt_text)+"\">";
+            json.html += "\n<img src=\""+url+"\" title=\""+safe(secret_text)+"\" alt=\""+safe(alt_text)+"\">";
         }
         else{
             _.forEach(url, function(image){
                 json.html += "\n<img src=\""+image+"\" title=\""+safe(secret_text)+"\" alt\""+safe(alt_text)+"\">";
             });
         }
+        json.html += "<div class='secret_text'>"+safe(secret_text)+"</div>"
     }
     return json;
 }
